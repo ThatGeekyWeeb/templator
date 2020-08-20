@@ -30,25 +30,25 @@ fi
 makedepends=$(echo $makedepends | sed 's/-/_/g' | sed 's/_devel//g') # Preset makedepends
 printf "require 'package'\n\n" # Print header
 
-printf 'class %b < Package\n' "${pkgname^}" | sed 's/-/_/g' # Set pkgname
-printf '  description "%b"\n' "$short_desc" # set desc from short_desc
-printf '  homepage "%b"\n' "$homepage" # set homepage
-printf '  version "%b"\n' "$version" # set version
+printf "class %b < Package\n" "${pkgname^}" | sed 's/-/_/g' # Set pkgname
+printf "  description '%b'\n" "$short_desc" # set desc from short_desc
+printf "  homepage '%b'\n" "$homepage" # set homepage
+printf "  version '%b'\n" "$version" # set version
 if [ -z "$archs" ]; then
-  printf '  compatibility "all"\n'
+  printf "  compatibility 'all'\n"
 elif [ "$archs" = "noarch" ]; then
-    printf '  compatibility "all"\n'
+    printf "  compatibility 'all'\n"
 else
-    printf '  compatibility "%b"' "$archs"
+    printf "  compatibility '%b'" "$archs"
 fi
 # ^^ Set archs
 
-printf '  source_url "%b"' "$distfiles" | sed "s/\${pkgname}/$pkgname/g" |tr "$" "#" | sed "s/\${version%.*}/${version%.*}/g" # Set source-pkg
-printf '\n  source_sha256 "%b"' "$checksum" # set checksum
+printf "  source_url '%b'" "$distfiles" | sed "s/\${pkgname}/$pkgname/g" |tr "$" "#" | sed "s/\${version%.*}/${version%.*}/g" # Set source-pkg
+printf "\n  source_sha256 '%b'" "$checksum" # set checksum
 # $hostmakedepends is most likely useless - So we skip it, if it does it should be defined with ${hostmakedepends} which will be sourced and replaced properly
 printf '\n\n  depends_on '
-printf '%b' "$makedepends" | tr " " "\n" |sed -e 's/^\|$/"/g' | tr "\n" "~" | tr " " "~" | sed 's/~/\n  depends_on /g' | sed 's/-devel//g' | sed 's/-/_/g' # Edit makedepends
-printf '%b' "$depends" | tr " " "\n" |sed -e 's/^\|$/"/g' | tr "\n" "~" |sed 's/~/\n  depends_on /g' | sed 's/-devel//g' | sed 's/-/_/g' # Edit depends
+printf '%b' "$makedepends" | tr " " "\n" |sed -e 's/^\|$/\x27/g' | tr "\n" "~" | tr " " "~" | sed 's/~/\n  depends_on /g' | sed 's/-devel//g' | sed 's/-/_/g' # Edit makedepends
+printf '%b' "$depends" | tr " " "\n" |sed -e 's/^\|$/\x27/g' | tr "\n" "~" |sed 's/~/\n  depends_on /g' | sed 's/-devel//g' | sed 's/-/_/g' # Edit depends
 printf '\n'
 
 ##
