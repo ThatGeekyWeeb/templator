@@ -19,6 +19,15 @@ KDE_SITE="https://download.kde.org/stable"
 ##
 
 IFS="" # Remove IFS to keep newlines
+depend(){
+printf "  source_url '%b'" "$distfiles" | sed "s/\${pkgname}/$pkgname/g" |tr "$" "#" | sed "s/\${version%.*}/${version%.*}/g" # Set source-pkg
+printf "\n  source_sha256 '%b'" "$checksum" # set checksum
+# $hostmakedepends is most likely useless - So we skip it, if it does it should be defined with ${hostmakedepends} which will be sourced and replaced properly
+printf '\n\n  depends_on '
+printf '%b' "$makedepends" | tr " " "\n" | sed -e 's/^\|$/\x27/g' | tr "\n" "~" | tr " " "~" | sed 's/~/\n  depends_on /g' | sed 's/-devel//g' | sed 's/-/_/g' # Edit makedepends
+printf '%b' "$depends" | tr " " "\n" |sed -e 's/^\|$/\x27/g' | tr "\n" "~" |sed 's/~/\n  depends_on /g' | sed 's/-devel//g' | sed 's/-/_/g' # Edit depends
+printf '\n'
+}
 root() {
 source $tempfile # Source variables within tempfile (template) 
 if [ "$2" != "no_checks" ]; then
@@ -44,15 +53,7 @@ else
     printf "  compatibility '%b'" "$archs"
 fi
 # ^^ Set archs
-
-printf "  source_url '%b'" "$distfiles" | sed "s/\${pkgname}/$pkgname/g" |tr "$" "#" | sed "s/\${version%.*}/${version%.*}/g" # Set source-pkg
-printf "\n  source_sha256 '%b'" "$checksum" # set checksum
-# $hostmakedepends is most likely useless - So we skip it, if it does it should be defined with ${hostmakedepends} which will be sourced and replaced properly
-printf '\n\n  depends_on '
-printf '%b' "$makedepends" | tr " " "\n" | sed -e 's/^\|$/\x27/g' | tr "\n" "~" | tr " " "~" | sed 's/~/\n  depends_on /g' | sed 's/-devel//g' | sed 's/-/_/g' # Edit makedepends
-printf '%b' "$depends" | tr " " "\n" |sed -e 's/^\|$/\x27/g' | tr "\n" "~" |sed 's/~/\n  depends_on /g' | sed 's/-devel//g' | sed 's/-/_/g' # Edit depends
-printf '\n'
-
+depend
 ##
 if [ "$build_style" = "gnu-configure" ]; then
 printf "
@@ -101,13 +102,13 @@ printf "
 end" "$make_build_arg"
 fi
 }
+source <(sed '2!d' $tempfile)
+printf '%b'"$(root $@ | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/    depends_on "gtkmm"/    depends_on "gtkmm2"\n    depends_on "gtkmm3"/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g')" > ./$pkgname.rb
 
-temp="$1"
-root $@ | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/    depends_on "gtkmm"/    depends_on "gtkmm2"\n    depends_on "gtkmm3"/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g'
-
-if [ ! -z $search_bol ]; then
-search_val=$3
-search="$(printf 'crew search %b' "$search_val")"
-${search}
-### Had to stop here, I'm not feeling great :(
+if [ ! -z ${search_bol} ]; then
+source $tempfile
+depends_save="$makedepends"
+printf '\n'
+depends_save=$(echo "$depends_save" | tr "\n" " " | sed 's/  / /g' | sed "s/'//g" | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/-devel//g' | tr "-" "_" | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g')
+bash ./search.sh $depends_save
 fi
