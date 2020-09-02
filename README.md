@@ -12,6 +12,8 @@ Options:
 - `search_bol=1` (`search_bol=1 bash ./templator ./template`) - Runs `crew search` with a list of deps - Uses `search.sh`
 - `no_checks` (`bash ./templator ./template no_checks`) - Allows `python3-module` build type scripts to be used
 ***
+Currently output is redirect to `$pkgname.rb` automatticly 
+***
 #### `tempnail` - Nails for the `templator` wall
 Downloads the `template` for `$pkgname`
 
