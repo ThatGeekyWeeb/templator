@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 tempfile="$1" # Set tempfile to first argument 
 
@@ -21,12 +21,15 @@ predep+=( acl attr autoconf automake binutils bison bz2 cloog cmake compressdoc 
 # ^ Create array with list of core packages
 
 IFS="" # Remove IFS to keep newlines
+dep_sed(){
+sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/    depends_on "gtkmm"/    depends_on "gtkmm2"\n    depends_on "gtkmm3"/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/http:/https:/g' | sed 's/xxd/vim/g'
+}
 depend(){
 source "$tempfile"
 printf "  source_url '%b'" "$distfiles" | sed "s/\${pkgname}/$pkgname/g" |tr "$" "#"
 printf "\n  source_sha256 '%b'\n" "$checksum"
 printf '\n'
-deps=$(echo "$makedepends $depends $hostmakedepends" | tr "\n" " " | sed 's/  / /g' | sed "s/'//g" | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/-devel//g' | tr "-" "_" | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/efl/libefl/g' | sed 's/pkg_config/pkgconfig/g')
+deps=$(echo "$makedepends $depends $hostmakedepends" | tr "\n" " " | sed 's/  / /g' | sed "s/'//g" | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/-devel//g' | tr "-" "_" | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/efl/libefl/g' | sed 's/pkg_config/pkgconfig/g' | sed 's/pam/openpam/g')
 deps=$(printf ' "%b" ' "$deps" | sed 's/ " //g' | sed 's/"//g')
 deps=$(echo $deps | tr " " "\n" | tr "\n" " " | tr '[:upper:]' '[:lower:]' | tr " " "\n")
 deps_ar=( $deps )
@@ -107,7 +110,7 @@ fi
 source <(sed '2!d' $1)
 
 state_pre=0
-echo $(root $@ | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/    depends_on "gtkmm"/    depends_on "gtkmm2"\n    depends_on "gtkmm3"/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/http:/https:/g' | sed 's/xxd/vim/g') > ./$pkgname.rb
+echo $(root $@ | dep_sed) > ./$pkgname.rb
 for b in "${predep[@]}"
 do
    sed -i -z "s/  depends_on '$b'\n//g" ./$pkgname.rb #Quotes when working with strings
@@ -120,7 +123,7 @@ if [ ! -z ${search_bol} ]; then
 source $tempfile
 depends_save="$makedepends $depends $hostmakedepends"
 printf '\n'
-depends_save=$(echo "$depends_save" | tr "\n" " " | sed 's/  / /g' | sed "s/'//g" | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/-devel//g' | tr "-" "_" | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/pkg_config/pkgconfig/g')
+depends_save=$(echo "$depends_save" | tr "\n" " " | sed 's/  / /g'| tr "-" "_" | sed "s/'//g" | dep_sed)
 depends_save=$(printf ' "%b" ' "$depends_save" | sed 's/ " //g')
 depends_save=$(echo $depends_save | tr " " "\n" | sed -e 's/^\|$/\x27/g' | tr "\n" " " | sed 's/"//g' | sed "s/'//g")
 search_ar=( "$depends_save" )
