@@ -72,8 +72,7 @@ printf "
 end"
 ## ^^ Set configure based build style - Above works 100% of the time - There are issues with Meson, Cmake and others, only this seems to work everytime!
 ##
-fi
-if [ "$build_style" = "cmake" ]; then
+elif [ "$build_style" = "cmake" ]; then
 printf "
  def self.build
    system \"cmake . -DCMAKE_INSTALL_PREFIX=#{CREW_PREFIX} -DINSTALL_LIBDIR=#{CREW_LIB_PREFIX} -DCMAKE_BUILD_TYPE=Release\"
@@ -83,8 +82,7 @@ printf "
    system \"DESTDIR=#{CREW_DEST_DIR} make install\"
  end
 end"
-fi
-if [ "$build_style" = "gnu-makefile" ]; then
+elif [ "$build_style" = "gnu-makefile" ]; then
 printf "
  def self.build
   system \"make -j#{CREW_NPROC} PREFIX=#{CREW_PREFIX}\"
@@ -93,8 +91,7 @@ printf "
   system \"make -j#{CREW_NPROC} install PREFIX=#{CREW_PREFIX}\"
  end
 end"
-fi
-if [ "$build_style" = "meson" ]; then
+elif [ "$build_style" = "meson" ]; then
 printf "
   def self.build
     system \"meson --prefix=#{CREW_PREFIX} --libdir=#{CREW_LIB_PREFIX} _build\"
@@ -110,7 +107,7 @@ fi
 source <(sed '2!d' $1)
 
 state_pre=0
-echo $(root $@ | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/    depends_on "gtkmm"/    depends_on "gtkmm2"\n    depends_on "gtkmm3"/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/http:/https:/g' | sed 's/xxd/vim/g') #> ./$pkgname.rb
+echo $(root $@ | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/    depends_on "gtkmm"/    depends_on "gtkmm2"\n    depends_on "gtkmm3"/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/http:/https:/g' | sed 's/xxd/vim/g') > ./$pkgname.rb
 for b in "${predep[@]}"
 do
    sed -i -z "s/  depends_on '$b'\n//g" ./$pkgname.rb #Quotes when working with strings
@@ -123,9 +120,9 @@ if [ ! -z ${search_bol} ]; then
 source $tempfile
 depends_save="$makedepends $depends $hostmakedepends"
 printf '\n'
-depends_save=$(echo "$depends_save" | tr "\n" " " | sed 's/  / /g' | sed "s/'//g" | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/-devel//g' | tr "-" "_" | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g')
+depends_save=$(echo "$depends_save" | tr "\n" " " | sed 's/  / /g' | sed "s/'//g" | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/-devel//g' | tr "-" "_" | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/pkg_config/pkgconfig/g')
 depends_save=$(printf ' "%b" ' "$depends_save" | sed 's/ " //g')
-depends_save=$(echo $depends_save | tr " " "\n" | sed -e 's/^\|$/\x27/g' | tr "\n" " ")
+depends_save=$(echo $depends_save | tr " " "\n" | sed -e 's/^\|$/\x27/g' | tr "\n" " " | sed 's/"//g' | sed "s/'//g")
 search_ar=( "$depends_save" )
 search_ar=($(echo "${search_ar[@]}" | tr " " "\n"))
 source <(echo "ar=($(printf '%s' ${search_ar[@]}))")
@@ -141,5 +138,9 @@ upack+=(${ar[$state]})
 fi
 state=$(($state + 1))
 done
+if [ -z ${upack[@]} ]; then
+echo "All deps were matched"
+else
 echo "${upack[@]}"
+fi
 fi
