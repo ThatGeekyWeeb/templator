@@ -142,8 +142,9 @@ fi
 state=$(($state + 1))
 done
 if [ ${upack[@]} = 0 ]; then
-echo "All deps were matched"
+echo "All deps were matched! :)"
 else
 echo "${upack[@]}"
+echo "The above deps were not matched :( - And my need to to be packaged"
 fi
 fi
