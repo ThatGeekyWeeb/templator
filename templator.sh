@@ -17,7 +17,7 @@ UBUNTU_SITE="https://archive.ubuntu.com/ubuntu/pool"
 XORG_SITE="https://www.x.org/releases/individual"
 KDE_SITE="https://download.kde.org/stable"
 ##
-predep+=( acl attr autoconf automake binutils bison bz2 cloog cmake compressdoc diffutils doxygen expat filecmd flex gawk gcc8 gcc_tools gdbm gettext git glibc gmp gnutls groff icu4c intltool isl krb5 less libedit libffi libiconv libidn2 libmetalink libpipeline libpsl libressl libsigsegv libssh2 libtasn1 libtirpc libtool libunbound libunistring libxml2 linuxheaders lzip m4 make mandb manpages meson most mpc mpfr ncurses nettle ninja openssl osl p11kit patch perl_locale_messages perl_text_unidecode perl_unicode_eastasianwidth perl_xml_parser pkgconfig python27 python3 readline ruby sed setuptools slang sqlite texinfo trousers uchardet unzip util_macros wget xzutils zip zlibpkg tar)
+predep+=( acl attr autoconf automake binutils bison bz2 cloog cmake compressdoc diffutils doxygen expat filecmd flex gawk gcc8 gcc_tools gdbm gettext git glibc gmp gnutls groff icu4c intltool isl krb5 less libedit libffi libiconv libidn2 libmetalink libpipeline libpsl libressl libsigsegv libssh2 libtasn1 libtirpc libtool libunbound libunistring libxml2 linuxheaders lzip m4 make mandb manpages meson most mpc mpfr ncurses nettle ninja openssl osl p11kit patch perl_locale_messages perl_text_unidecode perl_unicode_eastasianwidth perl_xml_parser pkgconfig python27 python3 readline ruby sed setuptools slang sqlite texinfo trousers uchardet unzip util_macros wget xzutils zip zlibpkg tar pkg_config)
 # ^ Create array with list of core packages
 
 IFS="" # Remove IFS to keep newlines
@@ -26,7 +26,7 @@ source "$tempfile"
 printf "  source_url '%b'" "$distfiles" | sed "s/\${pkgname}/$pkgname/g" |tr "$" "#"
 printf "\n  source_sha256 '%b'\n" "$checksum"
 printf '\n'
-deps=$(echo "$makedepends $depends $hostmakedepends" | tr "\n" " " | sed 's/  / /g' | sed "s/'//g" | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/-devel//g' | tr "-" "_" | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g')
+deps=$(echo "$makedepends $depends $hostmakedepends" | tr "\n" " " | sed 's/  / /g' | sed "s/'//g" | sed 's/libltdl/libtool/g' | sed 's/gtk+3/pygtk/g' | sed 's/gtk+2/pygtk/g' | sed 's/gstreamer1/gstreamer/g' | sed 's/libsigc++/libsigcplusplus/g' | sed 's/python3_setuptools/setuptools/g' | sed 's/vorbis_tools/libvorbis/g' | sed 's/desktop_file_utils/desktop_file_utilities/g' | sed 's/xorgproto/xorg_proto/g' | sed 's/-devel//g' | tr "-" "_" | sed 's/libcurl/curl/g' | sed 's/libutf8proc/utf8proc/g' | sed 's/efl/libefl/g' | sed 's/pkg_config/pkgconfig/g')
 deps=$(printf ' "%b" ' "$deps" | sed 's/ " //g' | sed 's/"//g')
 deps=$(echo $deps | tr " " "\n" | tr "\n" " " | tr '[:upper:]' '[:lower:]' | tr " " "\n")
 deps_ar=( $deps )
