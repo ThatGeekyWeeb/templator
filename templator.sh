@@ -17,6 +17,7 @@ UBUNTU_SITE="https://archive.ubuntu.com/ubuntu/pool"
 XORG_SITE="https://www.x.org/releases/individual"
 KDE_SITE="https://download.kde.org/stable"
 ##
+##
 predep+=( acl attr autoconf automake binutils bison bz2 cloog cmake compressdoc diffutils doxygen expat filecmd flex g6awk gcc8 gcc_tools gdbm gettext git glibc gmp gnutls groff icu4c intltool isl krb5 less libedit libffi libiconv libidn2 libmetalink libpipeline libpsl libressl libsigsegv libssh2 libtasn1 libtirpc libtool libunbound libunistring libxml2 linuxheaders lzip m4 make mandb manpages meson most mpc mpfr ncurses nettle ninja openssl osl p11kit patch perl_locale_messages perl_text_unidecode perl_unicode_eastasianwidth perl_xml_parser pkgconfig python27 python3 readline ruby sed setuptools slang sqlite texinfo trousers uchardet unzip util_macros wget xzutils zip zlibpkg tar pkg_config libglib which)
 # ^ Create array with list of core packages
 
@@ -24,20 +25,25 @@ IFS="" # Remove IFS to keep newlines
 dep_sed(){
 sed -e 's/libltdl/libtool/g' -e 's/gtk+3/pygtk/g' -e 's/gtk+2/pygtk/g' -e 's/    depends_on "gtkmm"/    depends_on "gtkmm2"\n    depends_on "gtkmm3"/g' -e 's/gstreamer1/gstreamer/g' -e 's/libsigc++/libsigcplusplus/g' -e 's/python3_setuptools/setuptools/g' -e 's/vorbis_tools/libvorbis/g' -e 's/desktop_file_utils/desktop_file_utilities/g' -e 's/xorgproto/xorg_proto/g' -e 's/libcurl/curl/g' -e 's/libutf8proc/utf8proc/g' -e 's/http:/https:/g' -e 's/xxd/vim/g' -e 's/_devel//g' -e 's/eudev_libudev/eudev/g' -e 's/zlib/zlibpkg/g' -e 's/liblzma/lzma/g' -e "s/'xz'/'xzutils'/g" -e 's/awk/gawk/g' -e 's/libtasn1_tools/libtasn1/g' -e 's/pkg_config/pkgconfig/g' -e 's/p11_kit/p11kit/g' -e 's/gnupg2/gnupg/g' | sed -z "s/  depends_on 'perl'\n//g"
 }
+# ^ Sed chain inside function for easy use
 depend(){
-source "$tempfile"
+source "$tempfile" # Source $1 - Source failes only effect the current function
 printf "  source_url '%b'" "$distfiles" | sed "s/\${pkgname}/$pkgname/g" |tr "$" "#"
 printf "\n  source_sha256 '%b'\n" "$checksum"
 printf '\n'
 deps=$(echo "$makedepends $depends $hostmakedepends" | tr "\n" " " | sed -e 's/  / /g' -e "s/'//g" -e 's/libltdl/libtool/g' -e 's/gtk+3/pygtk/g' -e 's/gtk+2/pygtk/g' -e 's/gstreamer1/gstreamer/g' -e 's/libsigc++/libsigcplusplus/g' -e 's/python3_setuptools/setuptools/g' -e 's/vorbis_tools/libvorbis/g' -e 's/desktop_file_utils/desktop_file_utilities/g' -e 's/xorgproto/xorg_proto/g' -e 's/-devel//g' | tr "-" "_" | sed -e 's/libcurl/curl/g' -e 's/libutf8proc/utf8proc/g' -e 's/efl/libefl/g' -e 's/pkg_config/pkgconfig/g' -e 's/pam/openpam/g')
+# ^ Different Sed chain, use here only - Sets $deps for later usage
 deps=$(printf ' "%b" ' "$deps" | sed -e 's/ " //g' -e 's/"//g')
+# ^ Prevent random qoutes
 deps=$(echo $deps | tr " " "\n" | tr "\n" " " | tr '[:upper:]' '[:lower:]' | tr " " "\n")
 deps_ar=( $deps )
 source <(echo "deps_ar=($(printf '%s' ${deps_ar[@]}))")
+# Source output of "echo deps_ar=($(printf '%s' ${deps_ar[@]}))"
 for l in "${deps_ar[@]}"
 do
 printf "  depends_on '%b'\n" "$l"
 done
+# Use array loop to print dep list
 }
 root() {
 source $tempfile # Source variables within tempfile (template) 
@@ -48,7 +54,7 @@ if [ "$2" != "no_checks" ]; then
   fi
 fi
 printf "require 'package'\n\n" # Print header
-pkgname=$(printf '%b' "$pkgname" | tr '[:upper:]' '[:lower:]')
+pkgname=$(printf '%b' "$pkgname" | tr '[:upper:]' '[:lower:]') # Remove upercase letters from $pkgname
 printf "class %b < Package\n" "${pkgname^}" | sed 's/-/_/g' # Set pkgname
 printf "  description '%b'\n" "$short_desc" # set desc from short_desc
 printf "  homepage '%b'\n" "$homepage" # set homepage
@@ -62,6 +68,7 @@ else
 fi
 # ^^ Set archs
 depend
+# Calls depend function
 ##
 if [ "$build_style" = "gnu-configure" ]; then
 cat << 'EOF'
@@ -110,20 +117,24 @@ cat << 'EOF'
 end
 EOF
 fi
+# Set build style system
 }
 source <(sed '2!d' $1)
+# ^ Source second line of $1
 pkgname=$(echo $pkgname | sed 's/-/_/g')
+# ^ Set pkgname & change - to _
 state_pre=0
 echo $(root $@ | dep_sed) > ./$pkgname.rb
 for b in "${predep[@]}"
 do
-   sed -i -z "s/  depends_on '$b'\n//g" ./$pkgname.rb #Quotes when working with strings
+   sed -i -z "s/  depends_on '$b'\n//g" ./$pkgname.rb
 done
+# Uses predep array ro remove core packages from dep list
 sed 's/\\//g' -i ./$pkgname.rb
-#  sed "s/  depends_on 'flex'\n//g" | sed "s/  depends_on 'tar'\n//g" | sed "s/  depends_on 'binutils'\n//g
-#
-#
+# ^ Remove blackshales cause by using heredocs
 
+
+#######
 if [ ! -z ${search_bol} ]; then
 source $tempfile
 depends_save="$makedepends $depends $hostmakedepends"
@@ -153,3 +164,4 @@ echo "${upack[@]}"
 echo "The above deps were not matched :( - And may need to to be packaged"
 fi
 fi
+##### ^ Depenency matching system
