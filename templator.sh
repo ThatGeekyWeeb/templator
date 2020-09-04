@@ -64,7 +64,7 @@ fi
 depend
 ##
 if [ "$build_style" = "gnu-configure" ]; then
-printf "
+cat << 'EOF'
   def self.build
       system \"./configure #{CREW_OPTIONS} ${configure_args}\"
       system \"make -j#{CREW_NPROC}\"
@@ -72,39 +72,43 @@ printf "
   def self.install
       system \"make install DESTDIR=#{CREW_DEST_DIR}\"
   end
-end"
+end
+EOF
 ## ^^ Set configure based build style - Above works 100% of the time - There are issues with Meson, Cmake and others, only this seems to work everytime!
 ##
 elif [ "$build_style" = "cmake" ]; then
-printf "
+cat << 'EOF'
  def self.build
-   system \"cmake . -DCMAKE_INSTALL_PREFIX=#{CREW_PREFIX} -DINSTALL_LIBDIR=#{CREW_LIB_PREFIX} -DCMAKE_BUILD_TYPE=Release\"
-   system \"make -j#{CREW_NPROC}\"
- end\"
- def self.install
-   system \"DESTDIR=#{CREW_DEST_DIR} make install\"
+   system "cmake . -DCMAKE_INSTALL_PREFIX=#{CREW_PREFIX} -DINSTALL_LIBDIR=#{CREW_LIB_PREFIX} -DCMAKE_BUILD_TYPE=Release"
+   system "make -j#{CREW_NPROC}"
  end
-end"
+ def self.install
+   system "DESTDIR=#{CREW_DEST_DIR} make install"
+ end
+end
+EOF
 elif [ "$build_style" = "gnu-makefile" ]; then
-printf "
- def self.build
-  system \"make -j#{CREW_NPROC} PREFIX=#{CREW_PREFIX}\"
- end
- def self.install
-  system \"make -j#{CREW_NPROC} install PREFIX=#{CREW_PREFIX}\"
- end
-end"
-elif [ "$build_style" = "meson" ]; then
-printf "
+cat << 'EOF'
   def self.build
-    system \"meson --prefix=#{CREW_PREFIX} --libdir=#{CREW_LIB_PREFIX} _build\"
+   system "make -j#{CREW_NPROC} PREFIX=#{CREW_PREFIX}"
+  end
+  def self.install
+   system "make -j#{CREW_NPROC} install PREFIX=#{CREW_PREFIX}"
+  end
+end
+EOF
+elif [ "$build_style" = "meson" ]; then
+cat << 'EOF'
+  def self.build
+    system "meson --prefix=#{CREW_PREFIX} --libdir=#{CREW_LIB_PREFIX} _build"
     system 'ninja -v -C _build'
   end
   
   def self.install
-    system \"DESTDIR=#{CREW_DEST_DIR} ninja -C _build install\"
+    system "DESTDIR=#{CREW_DEST_DIR} ninja -C _build install"
   end
-end"
+end
+EOF
 fi
 }
 source <(sed '2!d' $1)
@@ -115,6 +119,7 @@ for b in "${predep[@]}"
 do
    sed -i -z "s/  depends_on '$b'\n//g" ./$pkgname.rb #Quotes when working with strings
 done
+sed 's/\\//g' -i ./$pkgname.rb
 #  sed "s/  depends_on 'flex'\n//g" | sed "s/  depends_on 'tar'\n//g" | sed "s/  depends_on 'binutils'\n//g
 #
 #
