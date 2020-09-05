@@ -87,7 +87,7 @@ elif [ "$build_style" = "cmake" ]; then
 cat << 'EOF'
  def self.build
    system "cmake . -DCMAKE_INSTALL_PREFIX=#{CREW_PREFIX} -DINSTALL_LIBDIR=#{CREW_LIB_PREFIX} -DCMAKE_BUILD_TYPE=Release"
-   system "make -j#{CREW_NPROC}"
+   system 'make'
  end
  def self.install
    system "DESTDIR=#{CREW_DEST_DIR} make install"
@@ -97,10 +97,10 @@ EOF
 elif [ "$build_style" = "gnu-makefile" ]; then
 cat << 'EOF'
   def self.build
-   system "make -j#{CREW_NPROC} PREFIX=#{CREW_PREFIX}"
+   system "make PREFIX=#{CREW_PREFIX}"
   end
   def self.install
-   system "make -j#{CREW_NPROC} install PREFIX=#{CREW_PREFIX}"
+   system "make install PREFIX=#{CREW_PREFIX} DESTDIR=#{CREW_DEST_DIR}"
   end
 end
 EOF
@@ -151,17 +151,17 @@ printf '\n'
 upack=()
 for b in "${ar[@]}"
 do
-bash ./search.sh ${ar[$state]}
-if [ $? != 0 ]; then
-upack+=(${ar[$state]})
-fi
-state=$(($state + 1))
+  bash ./search.sh ${ar[$state]}
+  if [ $? != 0 ]; then
+    upack+=(${ar[$state]})
+   fi
+  state=$(($state + 1))
 done
 if [ ${upack[@]} = 0 ]; then
-echo "All deps were matched! :)"
+  echo "All deps were matched! :)"
 else
-echo "${upack[@]}"
-echo "The above deps were not matched :( - And may need to to be packaged"
+  echo "${#unpack[@]} deps have not been matched"
+  printf "The missing deps are %b\n" "$(echo "${upack[@]}" | sed 's/ /, /g')"
 fi
 fi
-##### ^ Depenency matching system
+###### ^ Depenency matching system
