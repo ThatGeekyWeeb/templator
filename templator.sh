@@ -123,16 +123,25 @@ source <(sed '2!d' $1)
 # ^ Source second line of $1
 pkgname=$(echo $pkgname | sed 's/-/_/g')
 # ^ Set pkgname & change - to _
-state_pre=0
-echo $(root $@ | dep_sed) > ./$pkgname.rb
-for b in "${predep[@]}"
-do
-   sed -i -z "s/  depends_on '$b'\n//g" ./$pkgname.rb
-done
+if [ -z ${ech} ]; then
+  echo $(root $@ | dep_sed) > ./$pkgname.rb
+else
+  echo $(root $@ | dep_sed | sed 's/\\//g')
+fi
+# We can get quick examples by setting 'ech'
+if [ -z ${ech} ]; then
+  for b in "${predep[@]}"
+  do
+    sed -i -z "s/  depends_on '$b'\n//g" ./$pkgname.rb
+  done
+fi
 # Uses predep array ro remove core packages from dep list
-sed 's/\\//g' -i ./$pkgname.rb
-# ^ Remove blackshales cause by using heredocs
-
+# Not used if 'ech' is set
+if [ -f ./$pkgname.rb ]; then
+  sed 's/\\//g' -i ./$pkgname.rb
+fi
+# ^ Remove blackshales caused by using heredocs
+# Not used if $pkgname.rb does not exist
 
 #######
 if [ ! -z ${search_bol} ]; then
