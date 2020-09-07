@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 
 tempfile="$1" # Set tempfile to first argument 
-
+sed -i -e 's/>=...*"/"/g' ./$1
+sed -i -e 's/<=...*"/"/g' ./$1
+# Prevent version usage
 # Set websites for distfiles
 CPAN_SITE="https://cpan.perl.org/modules/by-module"
 DEBIAN_SITE="https://ftp.debian.org/debian/pool"
