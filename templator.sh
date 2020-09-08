@@ -50,9 +50,11 @@ done
 root() {
 source $tempfile # Source variables within tempfile (template) 
 if [ "$2" != "no_checks" ]; then
-  if [ $build_style = python3-module ]; then
-    printf 'Python is broken, we cant do that type of build style! - Yet!\n'
-    exit 1
+  if [ ! -z $build_style ]; then
+    if [ $build_style = python3-module ]; then
+      printf 'Python is broken, we cant do that type of build style! - Yet!\n'
+      exit 1
+    fi
   fi
 fi
 printf "require 'package'\n\n" # Print header
@@ -72,7 +74,10 @@ fi
 depend
 # Calls depend function
 ##
-if [ "$build_style" = "gnu-configure" ]; then
+if [ -z $build_style ]; then
+  export type_var="true" # Means build style was not set
+else
+  if [ "$build_style" = "gnu-configure" ]; then
 cat << 'EOF'
   def self.build
       system \"./configure #{CREW_OPTIONS} ${configure_args}\"
@@ -85,7 +90,7 @@ end
 EOF
 ## ^^ Set configure based build style - Above works 100% of the time - There are issues with Meson, Cmake and others, only this seems to work everytime!
 ##
-elif [ "$build_style" = "cmake" ]; then
+  elif [ "$build_style" = "cmake" ]; then
 cat << 'EOF'
  def self.build
    system "cmake . -DCMAKE_INSTALL_PREFIX=#{CREW_PREFIX} -DINSTALL_LIBDIR=#{CREW_LIB_PREFIX} -DCMAKE_BUILD_TYPE=Release"
@@ -96,7 +101,7 @@ cat << 'EOF'
  end
 end
 EOF
-elif [ "$build_style" = "gnu-makefile" ]; then
+  elif [ "$build_style" = "gnu-makefile" ]; then
 cat << 'EOF'
   def self.build
    system "make PREFIX=#{CREW_PREFIX}"
@@ -106,7 +111,7 @@ cat << 'EOF'
   end
 end
 EOF
-elif [ "$build_style" = "meson" ]; then
+  elif [ "$build_style" = "meson" ]; then
 cat << 'EOF'
   def self.build
     system "meson --prefix=#{CREW_PREFIX} --libdir=#{CREW_LIB_PREFIX} _build"
@@ -118,6 +123,7 @@ cat << 'EOF'
   end
 end
 EOF
+  fi
 fi
 # Set build style system
 }
@@ -130,6 +136,9 @@ if [ -z ${ech} ]; then
 else
   echo $(root $@ | dep_sed | sed 's/\\//g')
 fi
+if [ -z $build_style ]; then
+  export type_var="true"
+fi
 # We can get quick examples by setting 'ech'
 if [ -z ${ech} ]; then
   for b in "${predep[@]}"
@@ -139,6 +148,7 @@ if [ -z ${ech} ]; then
 fi
 # Uses predep array ro remove core packages from dep list
 # Not used if 'ech' is set
+
 if [ -f ./$pkgname.rb ]; then
   sed 's/\\//g' -i ./$pkgname.rb
 fi
@@ -176,3 +186,37 @@ else
 fi
 fi
 ###### ^ Depenency matching system
+
+###### Function Check
+if [ ! -z $type_var ]; then
+  printf '\n'
+  source $1
+  if declare -F do_configure &>/dev/null; then
+    echo "'do_configure()' is defined" >&2
+  fi
+  if declare -F do_build &>/dev/null; then
+    echo "'do_build()' is defined" >&2
+  fi
+  # '>&2' Prints to sterr to prevent redirection into $pkgname.rb
+  if declare -F do_install &>/dev/null; then
+    func="do_install"
+    echo $(declare -f $func) > ./tmp.$func
+    # Print to tmp.$func file so we can work without using a pipe
+    sed -i -e "s/$func ()//g" -e "s/vlicense .*//g" -e 's/;//g' ./tmp.$func
+    sed -i 1d ./tmp.$func && sed -i 1d ./tmp.$func
+    sed -i '$d' ./tmp.$func && sed -i '$d' ./tmp.$func
+    # Remove func() line ^    # ^ sed vlicense      #^ Remove '{' and '}'^ 
+    if grep -q "local" ./tmp.$func; then
+      grep "local" ./tmp.$func &> ./var.$func
+      echo $(tr " " "\n" < ./var.$func) > ./var.$func
+      echo $(tr -d " " < ./var.$func) > ./var.$func
+      echo $(tr -d '\t' < ./var.$func) > ./var.$func
+      echo $(tr "\n" " " < ./var.$func) > ./var.$func
+      sed -i -e 's/.* local //g' ./var.$func
+      sed -i -e "s/.* .*=\".*\"/$(cat ./var.$func)/g" ./tmp.$func
+      rm ./var.$func
+    fi
+    # grep usage of variable ^
+  fi
+fi
+###### Note: THE ABOVE IS NOT FINISHED! - Will leave residue

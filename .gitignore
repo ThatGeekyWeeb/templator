@@ -4,3 +4,4 @@ checks
 *.rb
 ./xf4/*
 ./xf4
+tmp.*
