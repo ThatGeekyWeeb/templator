@@ -5,3 +5,5 @@ checks
 ./xf4/*
 ./xf4
 tmp.*
+var.*
+*.do_*

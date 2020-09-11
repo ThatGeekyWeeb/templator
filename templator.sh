@@ -189,23 +189,22 @@ fi
 
 ###### Function Check
 if [ ! -z $type_var ]; then
-  printf '\n'
+  printf '\rWarning! $build_style has not been defined, function replacement will takeover, generation of this script cannot be automatted!\n'
   source $1
   if declare -F do_configure &>/dev/null; then
-    echo "'do_configure()' is defined" >&2
+    echo "'do_configure()' is defined"
   fi
   if declare -F do_build &>/dev/null; then
-    echo "'do_build()' is defined" >&2
+    echo "'do_build()' is defined"
   fi
-  # '>&2' Prints to sterr to prevent redirection into $pkgname.rb
   if declare -F do_install &>/dev/null; then
-    func="do_install"
+    func="do_install" # Declare func to I can just copy and paste, lul
     echo $(declare -f $func) > ./tmp.$func
     # Print to tmp.$func file so we can work without using a pipe
     sed -i -e "s/$func ()//g" -e "s/vlicense .*//g" -e 's/;//g' ./tmp.$func
     sed -i 1d ./tmp.$func && sed -i 1d ./tmp.$func
     sed -i '$d' ./tmp.$func && sed -i '$d' ./tmp.$func
-    # Remove func() line ^    # ^ sed vlicense      #^ Remove '{' and '}'^ 
+    # Remove func() line ^    # ^ sed vlicense
     if grep -q "local" ./tmp.$func; then
       grep "local" ./tmp.$func &> ./var.$func
       echo $(tr " " "\n" < ./var.$func) > ./var.$func
@@ -216,7 +215,16 @@ if [ ! -z $type_var ]; then
       sed -i -e "s/.* .*=\".*\"/$(cat ./var.$func)/g" ./tmp.$func
       rm ./var.$func
     fi
-    # grep usage of variable ^
+    echo $(tr -d "\t" < ./tmp.$func) > ./tmp.$func # Remove possible tabs
+    sed -i -e 's/^[ \t]*//' -e 's/for .*//g' -e 's/done//g' ./tmp.$func # Remove whitespaces from begining and 'for *' and 'done'
+    sed -i -z -e 's/do\n//g' ./tmp.$func # Remove 'do'
+    sed -i -e '/^$/d' ./tmp.$func # Remove new lines caused by sed
+    sed -i -e 's/\(.*\)/"\1"/g' ./tmp.$func # Qoute each line for usage in an array
+    echo $(tr "\n" " " < ./tmp.$func) > ./tmp.$func # Remove newlines for array usage
   fi
+  # grep usage of variable ^
 fi
-###### Note: THE ABOVE IS NOT FINISHED! - Will leave residue
+###### Note: THE ABOVE IS STILL NOT FINISHED! - And will leave residue
+###### Addtionally; THIS IS NOT MEANT FOR USAGE WITH AUTOMATTION! THE ABOVE SHOULD REQUIRE A HUMAN TO MANULLAY FIX ISSUES!
+# ***
+# echo $(tr * < *) > ./* # Output as subtitute after the inside command finishes as redirection into tr and then out removes all output
