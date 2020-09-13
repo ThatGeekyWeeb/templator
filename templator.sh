@@ -45,6 +45,7 @@ for l in "${deps_ar[@]}"
 do
 printf "  depends_on '%b'\n" "$l"
 done
+printf '\n' 
 # Use array loop to print dep list
 }
 root() {
@@ -74,17 +75,18 @@ fi
 depend
 # Calls depend function
 ##
-if [ -z $build_style ]; then
-  export type_var="true" # Means build style was not set
+if ! grep -q "build_style" ./$tempfile; then
+  echo 'type_var="true"' > ./tmp.func # Means build style was not set
+  export type_var="true"
 else
   if [ "$build_style" = "gnu-configure" ]; then
-cat << 'EOF'
+cat << EOF
   def self.build
-      system \"./configure #{CREW_OPTIONS} ${configure_args}\"
-      system \"make -j#{CREW_NPROC}\"
+      system "./configure #{CREW_OPTIONS} ${configure_args}"
+      system "make -j#{CREW_NPROC}"
   end
   def self.install
-      system \"make install DESTDIR=#{CREW_DEST_DIR}\"
+      system "make install DESTDIR=#{CREW_DEST_DIR}"
   end
 end
 EOF
@@ -136,9 +138,6 @@ if [ -z ${ech} ]; then
 else
   echo $(root $@ | dep_sed | sed 's/\\//g')
 fi
-if [ -z $build_style ]; then
-  export type_var="true"
-fi
 # We can get quick examples by setting 'ech'
 if [ -z ${ech} ]; then
   for b in "${predep[@]}"
@@ -188,7 +187,8 @@ fi
 ###### ^ Depenency matching system
 
 ###### Function Check
-if [ ! -z $type_var ]; then
+if [ -f ./tmp.func ]; then
+if [ -n $type_var ]; then
   printf '\rWarning! $build_style has not been defined, function replacement will takeover, generation of this script cannot be automatted!\n'
   source $1
   if declare -F do_configure &>/dev/null; then
@@ -223,6 +223,7 @@ if [ ! -z $type_var ]; then
     echo $(tr "\n" " " < ./tmp.$func) > ./tmp.$func # Remove newlines for array usage
   fi
   # grep usage of variable ^
+fi
 fi
 ###### Note: THE ABOVE IS STILL NOT FINISHED! - And will leave residue
 ###### Addtionally; THIS IS NOT MEANT FOR USAGE WITH AUTOMATTION! THE ABOVE SHOULD REQUIRE A HUMAN TO MANULLAY FIX ISSUES!

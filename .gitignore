@@ -7,3 +7,5 @@ checks
 tmp.*
 var.*
 *.do_*
+./temp/*
+./temp
