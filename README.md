@@ -5,8 +5,9 @@ Templator - Converts Void Linux templates into `crew` .rb's
 Within this repo are multiple tools for usage with the automation of packaging programs within `crew`.
 
 ## Dependencies
-`crew`
-<!-- `node` - Use nodebrew - For `patch_grabber.sh` --> <!-- Not Required, YET-->
+`crew`\
+`node` - Use nodebrew - For `patch_grabber.sh`\
+`gitio-cli` - Install from submodule\
 `wget` - For `patch_grabber.sh`\
 `wl_clipboard` - For `patch_grabber.sh`
 *** 
