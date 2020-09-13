@@ -9,3 +9,4 @@ var.*
 *.do_*
 ./temp/*
 ./temp
+./gitio-cli

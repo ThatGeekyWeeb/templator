@@ -1,0 +1,3 @@
+[submodule "gitio-cli"]
+	path = gitio-cli
+	url = https://github.com/danielireson/gitio-cli.git
