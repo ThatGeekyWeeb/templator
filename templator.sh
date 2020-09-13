@@ -75,6 +75,10 @@ fi
 depend
 # Calls depend function
 ##
+}
+
+build_style(){
+source $tempfile
 if ! grep -q "build_style" ./$tempfile; then
   echo 'type_var="true"' > ./tmp.func # Means build style was not set
   export type_var="true"
@@ -131,14 +135,20 @@ fi
 }
 source <(sed '2!d' $1)
 # ^ Source second line of $1
+void_pkg="$pkgname"
 pkgname=$(echo $pkgname | sed 's/-/_/g')
+echo "A package script for $pkgname is being generatd, please wait, this will take some time"
 # ^ Set pkgname & change - to _
 if [ -z ${ech} ]; then
   echo $(root $@ | dep_sed) > ./$pkgname.rb
 else
   echo $(root $@ | dep_sed | sed 's/\\//g')
 fi
+./patch_grabber.sh "$void_pkg" >> ./$pkgname.rb
+build_style >> ./$pkgname.rb
+##
 # We can get quick examples by setting 'ech'
+pkgname=$(echo $pkgname | sed 's/-/_/g')
 if [ -z ${ech} ]; then
   for b in "${predep[@]}"
   do
@@ -188,7 +198,7 @@ fi
 
 ###### Function Check
 if [ -f ./tmp.func ]; then
-if [ -n $type_var ]; then
+if [ -n "$type_var" ]; then
   printf '\rWarning! $build_style has not been defined, function replacement will takeover, generation of this script cannot be automatted!\n'
   source $1
   if declare -F do_configure &>/dev/null; then
