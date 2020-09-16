@@ -87,7 +87,7 @@ else
 cat << EOF
   def self.build
       system "./configure #{CREW_OPTIONS} ${configure_args}"
-      system "make -j#{CREW_NPROC}"
+      system 'make'
   end
   def self.install
       system "make install DESTDIR=#{CREW_DEST_DIR}"
