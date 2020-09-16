@@ -26,6 +26,8 @@ Currently output is redirected to `$pkgname.rb` automatticly
 Downloads the `template` for `$pkgname`
 
 Usage: `bash ./tempnail.sh "$pkgname"` - (`vim` = `bash ./tempnail.sh "vim"`)
-
+***
+#### `rawgrab` - Grabs raw files from any repo, any tree/tag with any file name.
+Usage: `bash ./rawgrab.sh "$user/$repo" "$tree" "$filename" "$output"`
 ***
 **NOTE:** This software is meant to be used at bash tools for a personal project, thus documentaion has not been provided ~ The source contains comments which outline how the script works.
