@@ -16,4 +16,15 @@ do
   echo "    system \"curl --ssl --progress-bar -o $i -L$(wl-paste)\""
   printf "    abort 'Checksum mismatch. :/ Try again.'.lightred unless Digest::SHA256.hexdigest( File.read('$i') ) == '%b'\n" $(curl -Ls $(wl-paste) | sha256sum | cut -d" " -f1)
 done
+source ./template
+if [ -z $patch_args ]; then
+  patch_type="-Np0"
+else
+  patch_type="$patch_args"
+fi
+
+for i in ${patches[@]}
+do
+  echo "    system \"patch ${patch_type} ./$i\""
+done
 echo "  end"

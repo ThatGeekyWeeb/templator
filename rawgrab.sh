@@ -4,4 +4,4 @@ if [ ! -z $4 ]; then
 else
   out="-LO"
 fi
-curl --ssl ${out} "https://github.com/$1/raw/$2/packages/$3"
+curl --ssl ${out} "https://github.com/$1/raw/$2/$3"

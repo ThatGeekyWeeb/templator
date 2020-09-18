@@ -31,3 +31,4 @@ Usage: `bash ./tempnail.sh "$pkgname"` - (`vim` = `bash ./tempnail.sh "vim"`)
 Usage: `bash ./rawgrab.sh "$user/$repo" "$tree" "$filename" "$output"`
 ***
 **NOTE:** This software is meant to be used at bash tools for a personal project, thus documentaion has not been provided ~ The source contains comments which outline how the script works.
+**NOTE:** There will be various errors defined as `vopt_*: command not found`: This is normal, and non-fatal ~ These issues will be worked out in the future
