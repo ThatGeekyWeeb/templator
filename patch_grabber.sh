@@ -9,10 +9,11 @@ patches+=($(ls ./ | sed '/^.*\.patch/!d' | tr "\n" " "))
 rm ./*.patch &>/dev/null
 printf '\n'
 echo "  def self.patch"
+version_node=$(nodebrew ls | cut -d$'\n' -f1)
 for i in ${patches[@]}
 do
-  node /usr/local/share/nodebrew/node/v14.9.0/bin/gitio-cli/index.js "https://raw.githubusercontent.com/void-linux/void-packages/master/srcpkgs/$pkgname/patches/$i" | tr "\n" " " | cut -d':' -f2- | sed 's/ Long URL: .*//g' | wl-copy
-  echo "    system \"curl --ssl --insecure --progress-bar -o $i -L$(wl-paste)\""
+  node /usr/local/share/nodebrew/node/$version_node/bin/gitio-cli/index.js "https://raw.githubusercontent.com/void-linux/void-packages/master/srcpkgs/$pkgname/patches/$i" | tr "\n" " " | cut -d':' -f2- | sed 's/ Long URL: .*//g' | wl-copy
+  echo "    system \"curl --ssl --progress-bar -o $i -L$(wl-paste)\""
   printf "    abort 'Checksum mismatch. :/ Try again.'.lightred unless Digest::SHA256.hexdigest( File.read('$i') ) == '%b'\n" $(curl -Ls $(wl-paste) | sha256sum | cut -d" " -f1)
 done
 echo "  end"
