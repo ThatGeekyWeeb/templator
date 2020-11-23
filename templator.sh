@@ -159,7 +159,9 @@ fi
 # Not used if 'ech' is set
 
 if [ -f ./$pkgname.rb ]; then
+  IFS=""
   sed 's/\\//g' -i ./$pkgname.rb
+  echo $(uniq -u ./$pkgname.rb) > ./$pkgname.rb # Removes dup lines
 fi
 # ^ Remove blackshales caused by using heredocs
 # Not used if $pkgname.rb does not exist
